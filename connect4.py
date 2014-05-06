@@ -5,8 +5,13 @@
 #  MIT Licence    #
 ###################
 
+import sys
 
-PLAYER_TOKENS = ['X', 'O']
+BLUE = '\033[94m'
+GREEN = '\033[92m'
+RED = '\033[91m'
+END_COLOR = '\033[0m'
+PLAYER_TOKENS = [RED+'X'+END_COLOR, BLUE+'O'+END_COLOR]
 
 class Board(object):
 
@@ -26,63 +31,36 @@ class Board(object):
             i -= 1
         pass
 
+
+    def get_line(self, start_x, start_y, delta_x, delta_y):
+        line = ""
+        x, y = start_x, start_y
+        while 0 <= x < self.cols and 0 <= y < self.rows:
+            line += self.grid[x][y]
+            x, y = x+delta_x, y+delta_y
+        return line
+
+
     def check_for_winner(self):
 
-        winning_strings = [token * 4 for token in PLAYER_TOKENS]
-        print winning_strings
-        
-        # vertical
         lines = []
-        for column in self.grid:
-            lines += ["".join(map(str, column))]
-
+        # vertical 
+        lines += [self.get_line(x, 0, 0, 1) for x in range(self.cols)]
         # horizontal
-        for y in range(self.rows):
-            lines += ["".join([self.grid[x][y] for x in range(self.cols)])]
-
- 
+        lines += [self.get_line(0, y, 1, 0) for y in range(self.rows)]
         # diagonal \
-        start_x = 0
-        for start_y in range(self.rows - 1):
-            line = ""
-            x, y = start_x, start_y
-            while 0 <= x < self.cols and 0 <= y < self.rows:
-                line += self.grid[x][y]
-                x, y = x+1, y+1
-            lines += [line]
-
-        start_y = 0
-        for start_x in range(self.cols - 1):
-            line = ""
-            x, y = start_x, start_y
-            while 0 <= x < self.cols and 0 <= y < self.rows:
-                line += self.grid[x][y]
-                x, y = x+1, y+1
-            lines += [line]
-
+        lines += [self.get_line(0, y, 1, 1) for y in range(self.rows-1)]
+        lines += [self.get_line(x, 0, 1, 1) for x in range(self.cols-1)]
         # diagonal /
-        start_x = self.cols - 1
-        for start_y in range(self.rows - 1):
-            line = ""
-            x, y = start_x, start_y
-            while 0 <= x < self.cols and 0 <= y < self.rows:
-                line += self.grid[x][y]
-                x, y = x-1, y+1
-            lines += [line]
+        lines += [self.get_line(self.cols-1, y, -1, 1) for y in range(self.rows-1)]
+        lines += [self.get_line(x, self.rows-1, 1, -1) for x in range(self.cols-1)]
 
-        start_y = self.rows - 1
-        for start_x in range(self.cols - 1):
-            line = ""
-            x, y = start_x, start_y
-            while 0 <= x < self.cols and 0 <= y < self.rows:
-                line += self.grid[x][y]
-                x, y = x+1, y-1
-            lines += [line]
+        last_player = PLAYER_TOKENS[(self.player+1)%2]
 
-        print lines
-        # check if a winning string is in lines
-        # if winning_strings is in lines
-        # print the winner, end the game
+        for line in lines:
+            if last_player*4 in line:
+                print "---> %s Wins" % last_player
+                sys.exit()
 
     def __str__(self):
         string = '\n'
@@ -95,10 +73,10 @@ class Board(object):
 board = Board()
 while True:
     print board
+    board.check_for_winner()
     try:
-        column = int(raw_input("\nPlayer %s, choose a column: " %PLAYER_TOKENS[board.player]))
-        if 0 <= column <= board.cols: 
+        column = int(raw_input("\nPlayer %s, choose a column: " % PLAYER_TOKENS[board.player]))
+        if 0 <= column < board.cols: 
             board.insert(column)
-            board.check_for_winner()
     except ValueError:
         print "Please specify a number [0-%i]" % board.cols
