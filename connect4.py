@@ -8,7 +8,6 @@
 import sys
 
 BLUE = '\033[94m'
-GREEN = '\033[92m'
 RED = '\033[91m'
 END_COLOR = '\033[0m'
 PLAYER_TOKENS = [RED+'X'+END_COLOR, BLUE+'O'+END_COLOR]
@@ -29,7 +28,6 @@ class Board(object):
                 self.player = (self.player+1)%2 # Toggle current player
                 break
             i -= 1
-        pass
 
 
     def get_line(self, start_x, start_y, delta_x, delta_y):
@@ -59,7 +57,7 @@ class Board(object):
 
         for line in lines:
             if last_player*4 in line:
-                print "---> %s Wins" % last_player
+                print "---> %s Wins!" % last_player
                 sys.exit()
 
     def __str__(self):
@@ -73,10 +71,10 @@ class Board(object):
 board = Board()
 while True:
     print board
-    board.check_for_winner()
     try:
         column = int(raw_input("\nPlayer %s, choose a column: " % PLAYER_TOKENS[board.player]))
-        if 0 <= column < board.cols: 
-            board.insert(column)
+        if 0 <= column < board.cols: board.insert(column)
     except ValueError:
         print "Please specify a number [0-%i]" % board.cols
+
+    board.check_for_winner()
