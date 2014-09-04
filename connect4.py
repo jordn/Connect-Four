@@ -68,13 +68,22 @@ class Board(object):
         return string
 
 
-board = Board()
-while True:
-    print board
-    try:
-        column = int(raw_input("\nPlayer %s, choose a column: " % PLAYER_TOKENS[board.player]))
-        if 0 <= column < board.cols: board.insert(column)
-    except ValueError:
-        print "Please specify a number [0-%i]" % board.cols
+class Game(object):
 
-    board.check_for_winner()
+    def __init__(self):
+        self.board = Board()
+
+    def play(self):        
+        while True:
+            print self.board
+            try:
+                column = int(raw_input("\nPlayer %s, choose a column: " % PLAYER_TOKENS[self.board.player]))
+                if 0 <= column < self.board.cols: self.board.insert(column)
+            except ValueError:
+                print "Please specify a number [0-%i]" % self.board.cols
+
+            self.board.check_for_winner()
+
+
+game = Game()
+game.play()
