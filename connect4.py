@@ -9,12 +9,9 @@
 ###################
 
 import sys
+import copy
 import random
 
-BLUE = '\033[ 30 ; 44 ; 1 m' # black on blue
-RED = '\033[ 36 ; 45 ; 1 m'  # bright cyan on magenta︎
-YELLOW = '\033[ 33 ; 1 m '
-END_COLOR = '\033[0m'
 EMPTY = u"⬜"
 PLAYER_TOKENS = [u"🔵", u"🔴"]
 
@@ -36,7 +33,6 @@ class Board(object):
                 break
             i -= 1
 
-
     def get_line(self, start_x, start_y, delta_x, delta_y):
         line = ""
         x, y = start_x, start_y
@@ -44,7 +40,6 @@ class Board(object):
             line += self.grid[x][y]
             x, y = x+delta_x, y+delta_y
         return line
-
 
     def is_there_a_winner(self):
 
@@ -60,16 +55,15 @@ class Board(object):
         lines += [self.get_line(self.cols-1, y, -1, 1) for y in range(self.rows-1)]
         lines += [self.get_line(x, self.rows-1, 1, -1) for x in range(self.cols-1)]
 
-        last_player = PLAYER_TOKENS[(self.player+1)%2]
-
         for line in lines:
-            if last_player*4 in line:
-                return last_player
+            for player in PLAYER_TOKENS:
+                if player*4 in line:
+                    return player
         return False
 
     def is_full(self):
-        for row in self.grid:
-            if EMPTY in row:
+        for column in self.grid:
+            if EMPTY in column:
                 return False
         return True
 
@@ -77,9 +71,8 @@ class Board(object):
         string = '\n'
         for y in range(self.rows):
             string += " ".join(self.grid[x][y] for x in range(self.cols)) + '\n'
-        string += u"\n" + u" ".join([str(i) for i in range(1, self.cols+1)])
+        string += u" ".join([str(i) for i in range(1, self.cols+1)])
         return string
-
 
 
 class Game(object):
@@ -88,7 +81,6 @@ class Game(object):
         self.board = Board()
         self.ai = AI()
         print self.board
-
 
     def play(self):        
         print "START"
@@ -121,7 +113,18 @@ class AI(object):
     def take_turn(self, board):
 
         # Systematically determined to be the optimum Connect-4 strategy
-        board.insert(random.randint(1, board.cols))
+        board.insert(self.evaluate_options(board))
+
+    def evaluate_options(self, board):
+        for col in range(1, board.cols+1):
+            theoretical_board = copy.deepcopy(board)
+            theoretical_board.insert(col)
+            print theoretical_board.__unicode__()
+
+            if theoretical_board.is_there_a_winner():
+                print u"\nPlayer {0}  would win in column {1}".format(theoretical_board.is_there_a_winner(), col)
+                return col
+        return random.randint(1, board.cols)
 
 
 game = Game()
