@@ -64,8 +64,9 @@ class Board(object):
 
         for line in lines:
             if last_player*4 in line:
-                print "---> %s  Wins!" % last_player
-                sys.exit()
+                return last_player
+                
+        return False
 
     def __unicode__(self):
         string = '\n'
@@ -89,7 +90,9 @@ class Game(object):
         while True:
             print self.board.__unicode__()
 
-            if self.board.is_there_a_winner():
+            winner = self.board.is_there_a_winner()
+            if winner:
+                print "---> %s  Wins!" % winner
                 break
 
             if (self.board.player == 0):
@@ -107,7 +110,7 @@ class Game(object):
 class AI(object):
 
     def take_turn(self, board):
-        
+
         # Systematically determined to be the optimum Connect-4 strategy
         board.insert(random.randint(0,6))
 
