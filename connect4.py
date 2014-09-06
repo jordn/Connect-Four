@@ -65,8 +65,13 @@ class Board(object):
         for line in lines:
             if last_player*4 in line:
                 return last_player
-                
         return False
+
+    def is_full(self):
+        for row in self.grid:
+            if EMPTY in row:
+                return False
+        return True
 
     def __unicode__(self):
         string = '\n'
@@ -95,11 +100,15 @@ class Game(object):
                 print "---> %s  Wins!" % winner
                 break
 
+            if self.board.is_full():
+                print "---> Draw!"
+                break
+
             if (self.board.player == 0):
                 try:
                     print u"\nPlayer {0} , choose a column: ".format(PLAYER_TOKENS[self.board.player])
                     column = int(raw_input())
-                    if 0 <= column < self.board.cols: self.board.insert(column)
+                    if 0 <= column <= self.board.cols: self.board.insert(column)
                 except ValueError:
                     print "Please specify a number [0-%i]" % self.board.cols
             else:
@@ -112,7 +121,7 @@ class AI(object):
     def take_turn(self, board):
 
         # Systematically determined to be the optimum Connect-4 strategy
-        board.insert(random.randint(0,6))
+        board.insert(random.randint(1, board.cols))
 
 
 game = Game()
