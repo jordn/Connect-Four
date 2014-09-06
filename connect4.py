@@ -4,7 +4,7 @@
 ###################
 #  CONNECT FOUR   #
 #  Jordan Burgess #
-#  2014-09-06     #️
+#  2014-09-06 q    #️
 #  MIT Licence    #
 ###################
 #⭕☐✖❍◎☐
@@ -84,8 +84,12 @@ class Game(object):
 
     def play(self):        
         print "START"
-        print self.board.player
-        while not self.board.is_there_a_winner():
+        while True:
+            print self.board.__unicode__()
+
+            if self.board.is_there_a_winner():
+                break
+
             if (self.board.player == 0):
                 try:
                     print u"\nPlayer {0} , choose a column: ".format(PLAYER_TOKENS[self.board.player])
@@ -95,12 +99,14 @@ class Game(object):
                     print "Please specify a number [0-%i]" % self.board.cols
             else:
                 self.ai.take_turn(self.board)
-            print self.board.__unicode__()
+
 
 
 class AI(object):
 
     def take_turn(self, board):
+
+        # Systematically determined to be the optimum Connect-4 strategy
         board.insert(4)
 
 
