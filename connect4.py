@@ -4,11 +4,12 @@
 ###################
 #  CONNECT FOUR   #
 #  Jordan Burgess #
-#  2014-09-06 q    #️
+#  2014-09-06     #️
 #  MIT Licence    #
 ###################
-#⭕☐✖❍◎☐
+
 import sys
+import random
 
 BLUE = '\033[ 30 ; 44 ; 1 m' # black on blue
 RED = '\033[ 36 ; 45 ; 1 m'  # bright cyan on magenta︎
@@ -25,7 +26,8 @@ class Board(object):
         self.grid = [[EMPTY]*self.rows for c in xrange(self.cols)]
         self.player = 0 # who's turn?
 
-    def insert(self, column):
+    def insert(self, choice):
+        column = choice - 1
         i = len(self.grid[column])-1
         while i >= 0:
             if self.grid[column][i] == EMPTY:
@@ -69,7 +71,7 @@ class Board(object):
         string = '\n'
         for y in range(self.rows):
             string += " ".join(self.grid[x][y] for x in range(self.cols)) + '\n'
-        string += u"\n" + u" ".join([str(i) for i in range(self.cols)])
+        string += u"\n" + u" ".join([str(i) for i in range(1, self.cols+1)])
         return string
 
 
@@ -105,9 +107,9 @@ class Game(object):
 class AI(object):
 
     def take_turn(self, board):
-
+        
         # Systematically determined to be the optimum Connect-4 strategy
-        board.insert(4)
+        board.insert(random.randint(0,6))
 
 
 game = Game()
