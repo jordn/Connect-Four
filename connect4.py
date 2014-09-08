@@ -61,10 +61,16 @@ class Board(object):
                     return player
         return False
 
-    def is_full(self):
-        for column in self.grid:
+    def is_full(self, col=None):
+        if col:
+            column = self.get_line(col-1, 0, 0, 1)
             if EMPTY in column:
                 return False
+        else:
+            for column in self.grid:
+                if EMPTY in column:
+                    return False
+
         return True
 
     def __unicode__(self):
@@ -77,15 +83,14 @@ class Board(object):
 
 class Game(object):
 
-    def __init__(self):
+    def __init__(self, mode):
         self.board = Board()
-        self.ai = AI()
-        print self.board
+        if mode == 1:
+            self.ai = AI()
 
     def play(self):        
-        print "START"
         while True:
-            print self.board.__unicode__()
+            print unicode(self.board)
 
             winner = self.board.is_there_a_winner()
             if winner:
@@ -96,16 +101,16 @@ class Game(object):
                 print "---> Draw!"
                 break
 
-            if (self.board.player == 0):
+            if (self.board.player == 0 or not hasattr(self, 'ai')):
                 try:
                     print u"\nPlayer {0} , choose a column: ".format(PLAYER_TOKENS[self.board.player])
-                    column = int(raw_input())
-                    if 0 <= column <= self.board.cols: self.board.insert(column)
+                    col = int(raw_input())
+                    if 0 <= col <= self.board.cols and not self.board.is_full(col):
+                        self.board.insert(col)
                 except ValueError:
                     print "Please specify a number [0-%i]" % self.board.cols
             else:
                 self.ai.take_turn(self.board)
-
 
 
 class AI(object):
@@ -116,16 +121,30 @@ class AI(object):
         board.insert(self.evaluate_options(board))
 
     def evaluate_options(self, board):
+
         for col in range(1, board.cols+1):
             theoretical_board = copy.deepcopy(board)
+            theoretical_board.is_full()
+            if theoretical_board.is_full(col):
+                continue
+
             theoretical_board.insert(col)
-            print theoretical_board.__unicode__()
+
+            print unicode(theoretical_board)
 
             if theoretical_board.is_there_a_winner():
                 print u"\nPlayer {0}  would win in column {1}".format(theoretical_board.is_there_a_winner(), col)
                 return col
-        return random.randint(1, board.cols)
+            else:
+                opponent_winning_column = self.evaluate_options(theoretical_board)
+                if opponent_winning_column:
+
+                    # Prune off this option
+                    return False
+
+        return col
 
 
-game = Game()
+mode = int(raw_input("1 = Single player (against AI)\n2 = 2 player (against friend)\nSELECT MODE:"))
+game = Game(mode)
 game.play()
