@@ -23,12 +23,11 @@ class Board(object):
         self.grid = [[EMPTY]*self.rows for c in xrange(self.cols)]
         self.player = 0 # who's turn?
 
-    def insert(self, choice):
-        column = choice - 1
-        i = len(self.grid[column])-1
+    def insert(self, col):
+        i = len(self.grid[col])-1
         while i >= 0:
-            if self.grid[column][i] == EMPTY:
-                self.grid[column][i] = PLAYER_TOKENS[self.player]
+            if self.grid[col][i] == EMPTY:
+                self.grid[col][i] = PLAYER_TOKENS[self.player]
                 self.player = (self.player+1)%2 # Toggle current player
                 break
             i -= 1
@@ -63,7 +62,7 @@ class Board(object):
 
     def is_full(self, col=None):
         if col:
-            column = self.get_line(col-1, 0, 0, 1)
+            column = self.get_line(col, 0, 0, 1)
             if EMPTY in column:
                 return False
         else:
@@ -104,7 +103,7 @@ class Game(object):
             if (self.board.player == 0 or not hasattr(self, 'ai')):
                 try:
                     print u"\nPlayer {0} , choose a column: ".format(PLAYER_TOKENS[self.board.player])
-                    col = int(raw_input())
+                    col = int(raw_input()) - 1
                     if 0 <= col <= self.board.cols and not self.board.is_full(col):
                         self.board.insert(col)
                 except ValueError:
@@ -122,7 +121,7 @@ class AI(object):
 
     def evaluate_options(self, board):
 
-        for col in range(1, board.cols+1):
+        for col in range(0, board.cols):
             theoretical_board = copy.deepcopy(board)
             theoretical_board.is_full()
             if theoretical_board.is_full(col):
