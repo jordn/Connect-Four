@@ -11,13 +11,14 @@
 import sys
 import copy
 import random
+import time
 
 EMPTY = u"⬜"
 PLAYER_TOKENS = [u"🔵", u"🔴"]
 
 class Board(object):
 
-    def __init__(self, cols=7, rows=6):
+    def __init__(self, cols=4, rows=5):
         self.cols = cols
         self.rows = rows
         self.grid = [[EMPTY]*self.rows for c in xrange(self.cols)]
@@ -55,10 +56,10 @@ class Board(object):
         lines += [self.get_line(x, self.rows-1, 1, -1) for x in range(self.cols-1)]
 
         for line in lines:
-            for player in PLAYER_TOKENS:
-                if player*4 in line:
-                    return player
-        return False
+            for player in [0,1]:
+                if PLAYER_TOKENS[player]*3 in line:
+                    return True, player
+        return False, None
 
     def is_full(self, col=None):
         if col:
@@ -71,6 +72,18 @@ class Board(object):
                     return False
 
         return True
+
+    # score from the perspective of player 0
+    def evaluate(self):
+        winner_exists, player = self.is_there_a_winner()
+        print "winner", player
+        if winner_exists:
+            return 1 if player == 0 else -1
+        else:
+            return 0
+
+    def current_player(self):
+        return PLAYER_TOKENS[self.player]
 
     def __unicode__(self):
         string = '\n'
@@ -91,9 +104,10 @@ class Game(object):
         while True:
             print unicode(self.board)
 
-            winner = self.board.is_there_a_winner()
-            if winner:
-                print "---> %s  Wins!" % winner
+            winner_exists, player = self.board.is_there_a_winner()
+            print "winner", player
+            if winner_exists:
+                print "---> %s  Wins!" % PLAYER_TOKENS[player]
                 break
 
             if self.board.is_full():
@@ -114,35 +128,37 @@ class Game(object):
 
 class AI(object):
 
+    MAX_DEPTH = 3
     def take_turn(self, board):
 
         # Systematically determined to be the optimum Connect-4 strategy
-        board.insert(self.evaluate_options(board))
+        choice =self.minimax(board, 1, 0)
+        print u"Player {0}  goes in column {1}".format(board.current_player(), choice+1)
+        board.insert(choice)
 
-    def evaluate_options(self, board):
-
+    def minimax(self, board, current_depth, maximising):
+        child_scores = []
         for col in range(0, board.cols):
             theoretical_board = copy.deepcopy(board)
-            theoretical_board.is_full()
-            if theoretical_board.is_full(col):
-                continue
-
             theoretical_board.insert(col)
-
-            print unicode(theoretical_board)
-
-            if theoretical_board.is_there_a_winner():
-                print u"\nPlayer {0}  would win in column {1}".format(theoretical_board.is_there_a_winner(), col)
-                return col
+            # print unicode(theoretical_board)
+            time.sleep(0.05)
+            if current_depth == self.MAX_DEPTH:
+                child_scores.append(theoretical_board.evaluate())
             else:
-                opponent_winning_column = self.evaluate_options(theoretical_board)
-                if opponent_winning_column:
+                child_scores.append(self.minimax(theoretical_board, current_depth+1, (maximising+1%2)))
 
-                    # Prune off this option
-                    return False
+        print " "*current_depth, child_scores
 
-        return col
-
+        if maximising:
+            score = max(child_scores)
+        else:
+            score = min(child_scores)
+        index = child_scores.index(score)
+        if current_depth == 1: 
+            print "Choosing ", index
+            return index
+        return score
 
 mode = int(raw_input("1 = Single player (against AI)\n2 = 2 player (against friend)\nSELECT MODE:"))
 game = Game(mode)
