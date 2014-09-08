@@ -18,7 +18,7 @@ PLAYER_TOKENS = [u"🔵", u"🔴"]
 
 class Board(object):
 
-    def __init__(self, cols=4, rows=5):
+    def __init__(self, cols=7, rows=6):
         self.cols = cols
         self.rows = rows
         self.grid = [[EMPTY]*self.rows for c in xrange(self.cols)]
@@ -57,7 +57,7 @@ class Board(object):
 
         for line in lines:
             for player in [0,1]:
-                if PLAYER_TOKENS[player]*3 in line:
+                if PLAYER_TOKENS[player]*4 in line:
                     return True, player
         return False, None
 
@@ -76,7 +76,7 @@ class Board(object):
     # score from the perspective of player 0
     def evaluate(self):
         winner_exists, player = self.is_there_a_winner()
-        print "winner", player
+        # print "winner", player
         if winner_exists:
             return 1 if player == 0 else -1
         else:
@@ -105,7 +105,6 @@ class Game(object):
             print unicode(self.board)
 
             winner_exists, player = self.board.is_there_a_winner()
-            print "winner", player
             if winner_exists:
                 print "---> %s  Wins!" % PLAYER_TOKENS[player]
                 break
@@ -142,7 +141,7 @@ class AI(object):
             theoretical_board = copy.deepcopy(board)
             theoretical_board.insert(col)
             # print unicode(theoretical_board)
-            time.sleep(0.05)
+            # time.sleep(0.05)
             if current_depth == self.MAX_DEPTH:
                 child_scores.append(theoretical_board.evaluate())
             else:
