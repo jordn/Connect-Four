@@ -42,9 +42,18 @@ class Board(object):
         return line
 
     def is_there_a_winner(self):
+        lines = self.get_lines()
 
+        for line in lines:
+            for player in [0,1]:
+                if PLAYER_TOKENS[player]*4 in line:
+                    return True, player
+        return False, None
+
+
+    def get_lines(self):
         lines = []
-        # vertical 
+        # vertical
         lines += [self.get_line(x, 0, 0, 1) for x in range(self.cols)]
         # horizontal
         lines += [self.get_line(0, y, 1, 0) for y in range(self.rows)]
@@ -54,12 +63,7 @@ class Board(object):
         # diagonal /
         lines += [self.get_line(self.cols-1, y, -1, 1) for y in range(self.rows-1)]
         lines += [self.get_line(x, self.rows-1, 1, -1) for x in range(self.cols-1)]
-
-        for line in lines:
-            for player in [0,1]:
-                if PLAYER_TOKENS[player]*4 in line:
-                    return True, player
-        return False, None
+        return lines
 
     def is_full(self, col=None):
         if col:
@@ -73,10 +77,34 @@ class Board(object):
 
         return True
 
+    def longest_string(self, line, char):
+        current_longest = 0
+        longest = 0
+        for c in line:
+            if char == c:
+                current_longest += 1
+            else:
+                if current_longest > longest:
+                    longest = current_longest
+                current_longest = 0
+        return longest
+
+
     # score from the perspective of player 0
     def evaluate(self):
+        lines = self.get_lines()
+
+        total = 0
+        for line in lines:
+            total += self.longest_string(line, PLAYER_TOKENS[0])
+            total -= self.longest_string(line, PLAYER_TOKENS[1])
+
+        return total
+
         winner_exists, player = self.is_there_a_winner()
+
         # print "winner", player
+
         if winner_exists:
             return 1 if player == 0 else -1
         else:
@@ -100,7 +128,7 @@ class Game(object):
         if mode == 1:
             self.ai = AI()
 
-    def play(self):        
+    def play(self):
         while True:
             print unicode(self.board)
 
@@ -127,11 +155,11 @@ class Game(object):
 
 class AI(object):
 
-    MAX_DEPTH = 3
+    MAX_DEPTH = 5
     def take_turn(self, board):
 
         # Systematically determined to be the optimum Connect-4 strategy
-        choice =self.minimax(board, 1, 0)
+        choice = self.minimax(board, 1, 0)
         print u"Player {0}  goes in column {1}".format(board.current_player(), choice+1)
         board.insert(choice)
 
@@ -140,8 +168,7 @@ class AI(object):
         for col in range(0, board.cols):
             theoretical_board = copy.deepcopy(board)
             theoretical_board.insert(col)
-            # print unicode(theoretical_board)
-            # time.sleep(0.05)
+
             if current_depth == self.MAX_DEPTH:
                 child_scores.append(theoretical_board.evaluate())
             else:
@@ -154,7 +181,7 @@ class AI(object):
         else:
             score = min(child_scores)
         index = child_scores.index(score)
-        if current_depth == 1: 
+        if current_depth == 1:
             print "Choosing ", index
             return index
         return score
